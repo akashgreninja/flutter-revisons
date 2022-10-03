@@ -33,65 +33,58 @@ class _MyWidgetState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("login")),
-      body: FutureBuilder(
-        future: Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform,
-        ),
-        builder: (context, snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.done:
-              return Center(
-                child: Column(
-                  children: [
-                    TextField(
-                      enableSuggestions: true,
-                      autocorrect: true,
-                      controller: _email,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration:
-                          const InputDecoration(hintText: 'Enter your email'),
-                    ),
-                    TextField(
-                      obscureText: true,
-                      enableSuggestions: false,
-                      autocorrect: false,
-                      controller: _password,
-                      decoration:
-                          const InputDecoration(hintText: 'Enter your pass'),
-                    ),
-                    TextButton(
-                      onPressed: () async {
-                        final email = _email.text;
-                        final password = _password.text;
+      appBar: AppBar(title: Text("Login view")),
+      body: Center(
+        child: Column(
+          children: [
+            TextField(
+              enableSuggestions: true,
+              autocorrect: true,
+              controller: _email,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(hintText: 'Enter your email'),
+            ),
+            TextField(
+              obscureText: true,
+              enableSuggestions: false,
+              autocorrect: false,
+              controller: _password,
+              decoration: const InputDecoration(hintText: 'Enter your pass'),
+            ),
+            TextButton(
+              onPressed: () async {
+                final email = _email.text;
+                final password = _password.text;
 
-                        try {
-                          final creds = await FirebaseAuth.instance
-                              .signInWithEmailAndPassword(
-                                  email: email, password: password);
-                          // ignore: avoid_print
-                          print(creds);
-                        } on FirebaseAuthException catch (e) {
-                          // print("oopsie");
-                          // print(e.code);
-                          // print(e.runtimeType)
-                          if (e.code == " user-not-found") {
-                            print("user does not exist");
-                          } else if (e.code == 'wrong-password') {
-                            print("wrong password ");
-                            print(e.code);
-                          }
-                        }
-                      },
-                      child: const Text("yeetus"),
-                    ),
-                  ],
-                ),
-              );
-            default:
-              return const Text("loading...");
-          }
-        },
+                try {
+                  final creds = await FirebaseAuth.instance
+                      .signInWithEmailAndPassword(
+                          email: email, password: password);
+                  // ignore: avoid_print
+                  print(creds);
+                } on FirebaseAuthException catch (e) {
+                  // print("oopsie");
+                  // print(e.code);
+                  // print(e.runtimeType)
+                  if (e.code == " user-not-found") {
+                    print("user does not exist");
+                  } else if (e.code == 'wrong-password') {
+                    print("wrong password ");
+                    print(e.code);
+                  }
+                }
+              },
+              child: const Text("yeetus"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/register/', (Route<dynamic> route) => false);
+              },
+              child: Text("Not Registered? Register Here"),
+            )
+          ],
+        ),
       ),
     );
   }
