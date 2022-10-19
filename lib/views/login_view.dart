@@ -5,6 +5,8 @@ import 'dart:developer' as devtools show log;
 import '../firebase_options.dart';
 import 'package:flutter_test_for_vs/constants/routes.dart';
 
+import '../utilities/errorcode.dart';
+
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
 
@@ -69,12 +71,30 @@ class _MyWidgetState extends State<LoginView> {
                   // devtools.log("oopsie");
                   // devtools.log(e.code);
                   // devtools.log(e.runtimeType)
-                  if (e.code == " user-not-found") {
+                  if (e.code == "user-not-found") {
                     devtools.log("user does not exist");
+                    await showErrorDialog(
+                      context,
+                      'user not found',
+                    );
                   } else if (e.code == 'wrong-password') {
                     devtools.log("wrong password ");
                     devtools.log(e.code);
+                    await showErrorDialog(
+                      context,
+                      'password not correct found',
+                    );
+                  } else {
+                    await showErrorDialog(
+                      context,
+                      'Error:${e.code}',
+                    );
                   }
+                } catch (e) {
+                  await showErrorDialog(
+                    context,
+                    e.toString(),
+                  );
                 }
               },
               child: const Text("yeetus"),
