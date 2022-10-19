@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_test_for_vs/constants/routes.dart';
 import 'package:flutter_test_for_vs/views/VerifyEmailView.dart';
 import 'dart:developer' as devtools show log;
 import 'package:flutter_test_for_vs/views/login_view.dart';
@@ -14,8 +15,9 @@ void main() {
     MaterialApp(
       home: const HomePage(),
       routes: {
-        '/login/': (context) => const LoginView(),
-        '/register/': (context) => const RegisterView()
+        loginRoute: (context) => const LoginView(),
+        registerRoute: (context) => const RegisterView(),
+        notes: (context) => const NotesView()
       },
     ),
   );
@@ -56,7 +58,7 @@ class HomePage extends StatelessWidget {
             } else {
               return const LoginView();
             }
-            return const Text("done");
+
           default:
             return const CircularProgressIndicator();
         }
@@ -89,7 +91,7 @@ class _NotesViewState extends State<NotesView> {
                 if (shouldlogout) {
                   await FirebaseAuth.instance.signOut();
                   Navigator.of(context).pushNamedAndRemoveUntil(
-                      '/login/', (Route<dynamic> route) => false);
+                      loginRoute, (Route<dynamic> route) => false);
                 }
                 devtools.log(shouldlogout.toString());
 
