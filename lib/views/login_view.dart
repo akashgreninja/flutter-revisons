@@ -65,8 +65,13 @@ class _MyWidgetState extends State<LoginView> {
                           email: email, password: password);
                   // ignore: avoid_print
                   devtools.log(creds.toString());
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                      notes, (Route<dynamic> route) => false);
+                  final user = FirebaseAuth.instance.currentUser;
+                  if (user?.emailVerified ?? false) {
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                        notes, (Route<dynamic> route) => false);
+                  } else {
+                    Navigator.of(context).pushNamed(VerifyEmailRoute);
+                  }
                 } on FirebaseAuthException catch (e) {
                   // devtools.log("oopsie");
                   // devtools.log(e.code);
