@@ -286,9 +286,11 @@ const createNoteTable = ''' CREATE TABLE IF NOT EXISTS "notes" (
 );
       ''';
 
-const createUserTable = ''' CREATE TABLE  IF NOT EXISTS "user"(
-      "id"	INTEGER NOT NULL,
-      "email"	INTEGER NOT NULL UNIQUE,
-      PRIMARY KEY("id" AUTOINCREMENT)
+const createUserTable = ''' CREATE TABLE "notes" (
+	"id"	INTEGER NOT NULL,
+	"userId"	INTEGER NOT NULL,
+	"text"	TEXT,
+	FOREIGN KEY("userId") REFERENCES "user"("id"),
+	PRIMARY KEY("id" AUTOINCREMENT)
 );
       ''';
