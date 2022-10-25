@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test_for_vs/constants/routes.dart';
 import 'package:flutter_test_for_vs/services/auth/auth_service.dart';
-import 'package:flutter_test_for_vs/views/NotesView.dart';
+import 'package:flutter_test_for_vs/views/notes/NotesView.dart';
 import 'package:flutter_test_for_vs/views/VerifyEmailView.dart';
 import 'dart:developer' as devtools show log;
 import 'package:flutter_test_for_vs/views/login_view.dart';
+import 'package:flutter_test_for_vs/views/notes/new_notes_view.dart';
 import 'package:flutter_test_for_vs/views/register_view.dart';
+import 'package:path/path.dart';
 
 import 'firebase_options.dart';
 
@@ -18,7 +20,8 @@ void main() {
         loginRoute: (context) => const LoginView(),
         registerRoute: (context) => const RegisterView(),
         notes: (context) => const NotesView(),
-        VerifyEmailRoute: (context) => const VerifyEmail()
+        VerifyEmailRoute: (context) => const VerifyEmail(),
+        NewNoteRoute: (context) => const NewNotesView()
       },
     ),
   );
