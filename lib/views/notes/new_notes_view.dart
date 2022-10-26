@@ -1,6 +1,7 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
+
 import 'package:flutter_test_for_vs/services/auth/auth_service.dart';
 import 'package:flutter_test_for_vs/services/crud/notes_services.dart';
 
@@ -20,6 +21,8 @@ class _NewNotesViewState extends State<NewNotesView> {
   void initState() {
     _notesService = NotesService();
     _textController = TextEditingController();
+    print("initllized part 2");
+    print(_textController.text);
     super.initState();
   }
 
@@ -29,40 +32,66 @@ class _NewNotesViewState extends State<NewNotesView> {
       return;
     }
     final text = _textController.text;
+    print("sasasasasasas{$text}");
     await _notesService.updateNote(
       note: note,
       text: text,
     );
+    print("sasasasasasas{$text}");
   }
 
   void _setupTextControllerListener() {
     _textController.removeListener(_textControllerListener);
     _textController.addListener(_textControllerListener);
+    print("added listner");
   }
 
   Future<DatabaseNotes> createnewNote() async {
     final existingnote = _note;
+
     if (existingnote != null) {
       return existingnote;
     }
     final currentuser = AuthService.firebase().currentUser!;
+    log("${currentuser} dnwjdwjwdwbwj");
     final email = currentuser.email!;
-    final owner = await _notesService.getUser(email: email);
-    return await _notesService.createnotes(owner: owner);
+    log("${email} doneeee");
+    final owner = await _notesService.GetorCreateUser(email: email);
+    log("${owner} owner here");
+    try {
+      log("sucessfully in");
+      return await _notesService.createnotes(owner: owner);
+    } catch (e) {
+      log(e.toString());
+      return _notesService.createnotes(owner: owner);
+    }
   }
 
   void _deleteNoteIfTextisEmpty() {
     final note = _note;
+    log("deleted");
     if (_textController.text.isEmpty && note != null) {
       _notesService.DeleteNote(id: note.id);
+      print("done");
     }
   }
 
   void _saveNoteIfTextNotEmpty() async {
     final note = _note;
+    log(" not deleted");
     final text = _textController.text;
-    if (text.isNotEmpty && note != null) {
-      await _notesService.updateNote(note: note, text: text);
+    log(text);
+    log('${text.isNotEmpty}');
+    log('${note != null}');
+    if (text.isNotEmpty) {
+      log("all done ");
+      log('${note}');
+      log(text);
+
+      final rsults = await _notesService.updateNote(note: note!, text: text);
+      log("${rsults} here is the ans");
+    } else {
+      log("all not done ");
     }
   }
 

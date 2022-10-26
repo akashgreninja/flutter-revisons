@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:flutter_test_for_vs/services/crud/crud_exceptions.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' show join;
@@ -9,31 +10,75 @@ class NotesService {
 
   List<DatabaseNotes> _notes = [];
 
-  NotesService._sharedinstance();
-
+  NotesService._sharedinstance() {
+    _notesStreamController =
+        StreamController<List<DatabaseNotes>>.broadcast(onListen: () {
+      _notesStreamController.sink.add(_notes);
+    });
+  }
+//we are creating a singleton so that when we call NotesService() the app does not crash !! and the factory just sends the notes The singleton pattern is a pattern used in object-oriented programming which ensures that a class has only one instance and also provides a global point of access to it so we create one instance and factory it
   static final NotesService _shared = NotesService._sharedinstance();
 
   factory NotesService() => _shared;
 
-  final _notesStreamController =
-      StreamController<List<DatabaseNotes>>.broadcast();
+  //we went from   late final _notesStreamController =  StreamController<List<DatabaseNotes>>.broadcast(); to this Ibelow line because it does not hold value for more then one listners
+
+  late final StreamController<List<DatabaseNotes>> _notesStreamController;
 
   Stream<List<DatabaseNotes>> get allNotes => _notesStreamController.stream;
+
+  // Future<DatabaseUser> GetorCreateUser({required String email}) async {
+  //   try {
+  //     final user = await getUser(email: email);
+  //     print("getorcreate");
+  //     return user;
+  //   } on CouldNotFindUser {
+  //     final createuser = await addUser(email: email);
+  //     return createuser;
+  //   } catch (e) {
+  //     print("getorcreate");
+
+  //     rethrow;
+  //   }
+  // }
 
   Future<DatabaseUser> GetorCreateUser({required String email}) async {
     try {
       final user = await getUser(email: email);
       return user;
-    } on CouldNotFindUser {
-      final createuser = await addUser(email: email);
-      return createuser;
     } catch (e) {
-      rethrow;
+      if (e == CouldNotFindUser) {
+        final createuser = await addUser(email: email);
+        return createuser;
+      } else {
+        rethrow;
+      }
+    }
+  }
+
+  Future<DatabaseUser> getUser({required String email}) async {
+    log("inside user 2.0");
+    await _IsDbOpen();
+    final db = _getDatabaseorthrow();
+    final finalrows = await db.query(
+      userTable,
+      limit: 1,
+      where: 'email=?',
+      whereArgs: [email.toLowerCase()],
+    );
+    if (finalrows.isEmpty) {
+      log("inside user 2.0 false");
+      throw CouldNotFindUser();
+    } else {
+      log("${DatabaseUser.fromRow(finalrows.first)}");
+      return DatabaseUser.fromRow(finalrows.first);
     }
   }
 
   Future<void> _cachenotes() async {
     final allnotes = await getallnotes();
+    print(allnotes);
+
     _notes = allnotes.toList();
     _notesStreamController.add(_notes);
   }
@@ -61,11 +106,13 @@ class NotesService {
 
   Future<Iterable<DatabaseNotes>> getallnotes() async {
     await _IsDbOpen();
+    print("dbisopen");
     final db = _getDatabaseorthrow();
     final note = await db.query(
       noteTable,
     );
-
+    print(note);
+    print("${note.map((e) => DatabaseNotes.fromRow(e))} and");
     return note.map((e) => DatabaseNotes.fromRow(e));
   }
 
@@ -110,16 +157,22 @@ class NotesService {
   }
 
   Future<DatabaseNotes> createnotes({required DatabaseUser owner}) async {
+    log("correct");
     await _IsDbOpen();
     // make sure that owner exists in the DB
     final db = _getDatabaseorthrow();
+
+    log("correct");
     final dbUser = await getUser(email: owner.email);
     if (dbUser != owner) {
+      print("nope");
       throw CouldNotFindUser();
     }
     const text = '';
     final noteid =
         await db.insert(noteTable, {UserIdColumn: owner.id, textColumn: text});
+    print(noteid);
+    print("added it");
 
     final note = DatabaseNotes(
       id: noteid,
@@ -127,24 +180,10 @@ class NotesService {
       text: text,
     );
     _notes.add(note);
+    print("${note} dsdsdsdsdsdsdsdsvdgsdgsgdsgvdvgsdvsgg");
     _notesStreamController.add(_notes);
+    print("${note} dsdsdsdsdsdsdsdsvdgsdgsgdsgvdvgsdvsgg");
     return note;
-  }
-
-  Future<DatabaseUser> getUser({required String email}) async {
-    await _IsDbOpen();
-    final db = _getDatabaseorthrow();
-    final finalrows = await db.query(
-      userTable,
-      limit: 1,
-      where: 'email=?',
-      whereArgs: [email.toLowerCase()],
-    );
-    if (finalrows.isEmpty) {
-      throw CouldNotFindUser();
-    } else {
-      return DatabaseUser.fromRow(finalrows.first);
-    }
   }
 
   Future<DatabaseUser> addUser({required String email}) async {
@@ -198,6 +237,7 @@ class NotesService {
       await db.execute(createUserTable);
 
       await db.execute(createNoteTable);
+      print("created");
       await _cachenotes();
     } on MissingPlatformDirectoryException {
       throw UnableToGetDocumentsDirectory();
@@ -270,27 +310,25 @@ class DatabaseNotes {
   int get hashCode => id.hashCode;
 }
 
-const dbName = 'notes.db';
+const dbName = 'notecrs.db';
 const noteTable = 'notes';
 const userTable = 'user';
 const idColumn = 'id';
 const emailColumn = "email";
-const UserIdColumn = "user_id";
+const UserIdColumn = "userId";
 const textColumn = 'text';
 const createNoteTable = ''' CREATE TABLE IF NOT EXISTS "notes" (
-      "id"	INTEGER NOT NULL,
-      "userId"	INTEGER NOT NULL,
-      "text"	TEXT,
-      FOREIGN KEY("userId") REFERENCES "user"("id"),
-      PRIMARY KEY("id")
-);
-      ''';
-
-const createUserTable = ''' CREATE TABLE "notes" (
 	"id"	INTEGER NOT NULL,
 	"userId"	INTEGER NOT NULL,
 	"text"	TEXT,
-	FOREIGN KEY("userId") REFERENCES "user"("id"),
+	PRIMARY KEY("id"),
+	FOREIGN KEY("userId") REFERENCES "user"("id")
+);
+      ''';
+
+const createUserTable = '''CREATE TABLE IF NOT EXISTS "user" (
+	"id"	INTEGER NOT NULL,
+	"email"	INTEGER NOT NULL UNIQUE,
 	PRIMARY KEY("id" AUTOINCREMENT)
 );
       ''';

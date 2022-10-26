@@ -22,14 +22,10 @@ class _NotesViewState extends State<NotesView> {
   @override
   void initState() {
     _notesService = NotesService();
+    final notes = _notesService.getallnotes();
+    print(notes);
 
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    _notesService.close();
-    super.dispose();
   }
 
   @override
@@ -77,7 +73,18 @@ class _NotesViewState extends State<NotesView> {
                     switch (snapshot.connectionState) {
                       case ConnectionState.waiting:
                       case ConnectionState.active:
-                        return Text("waiting for notes ");
+                        if (snapshot.hasData) {
+                          final allnotes = snapshot.data as List<DatabaseNotes>;
+                          print("this is the ans ${allnotes}");
+                          return ListView.builder(
+                            itemCount: allnotes.length,
+                            itemBuilder: (context, index) {
+                              return const Text("Item");
+                            },
+                          );
+                        } else {
+                          return const CircularProgressIndicator();
+                        }
 
                       default:
                         return const CircularProgressIndicator();
