@@ -7,9 +7,6 @@ import 'dart:developer' as devtools show log;
 import 'package:flutter_test_for_vs/views/login_view.dart';
 import 'package:flutter_test_for_vs/views/notes/new_notes_view.dart';
 import 'package:flutter_test_for_vs/views/register_view.dart';
-import 'package:path/path.dart';
-
-import 'firebase_options.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
