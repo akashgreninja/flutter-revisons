@@ -4,15 +4,16 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_test_for_vs/services/auth/auth_service.dart';
 import 'package:flutter_test_for_vs/services/crud/notes_services.dart';
+import 'package:flutter_test_for_vs/utilities/dialogs/get_arguments.dart';
 
-class NewNotesView extends StatefulWidget {
-  const NewNotesView({super.key});
+class CreateUpdateNotesView extends StatefulWidget {
+  const CreateUpdateNotesView({super.key});
 
   @override
-  State<NewNotesView> createState() => _NewNotesViewState();
+  State<CreateUpdateNotesView> createState() => _NewNotesViewState();
 }
 
-class _NewNotesViewState extends State<NewNotesView> {
+class _NewNotesViewState extends State<CreateUpdateNotesView> {
   DatabaseNotes? _note;
   late final NotesService _notesService;
   late final TextEditingController _textController;
@@ -32,21 +33,25 @@ class _NewNotesViewState extends State<NewNotesView> {
       return;
     }
     final text = _textController.text;
-    print("sasasasasasas{$text}");
+
     await _notesService.updateNote(
       note: note,
       text: text,
     );
-    print("sasasasasasas{$text}");
   }
 
   void _setupTextControllerListener() {
     _textController.removeListener(_textControllerListener);
     _textController.addListener(_textControllerListener);
-    print("added listner");
   }
 
-  Future<DatabaseNotes> createnewNote() async {
+  Future<DatabaseNotes> CreateorGetExistingNote(BuildContext context) async {
+    final widgetnote = context.getArgument<DatabaseNotes>();
+    if (widgetnote != null) {
+      _note = widgetnote;
+      _textController.text = widgetnote.text;
+      return widgetnote;
+    }
     final existingnote = _note;
 
     if (existingnote != null) {
@@ -63,7 +68,9 @@ class _NewNotesViewState extends State<NewNotesView> {
       return await _notesService.createnotes(owner: owner);
     } catch (e) {
       log(e.toString());
-      return _notesService.createnotes(owner: owner);
+      final newnote = await _notesService.createnotes(owner: owner);
+      _note = newnote;
+      return newnote;
     }
   }
 
@@ -108,7 +115,7 @@ class _NewNotesViewState extends State<NewNotesView> {
     return Scaffold(
       appBar: AppBar(title: const Text("new note")),
       body: FutureBuilder(
-        future: createnewNote(),
+        future: CreateorGetExistingNote(context),
         builder: ((context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.done:

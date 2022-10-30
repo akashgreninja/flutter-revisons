@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test_for_vs/services/auth/auth_service.dart';
 import 'package:flutter_test_for_vs/services/crud/notes_services.dart';
 import 'package:flutter_test_for_vs/utilities/dialogs/logout_dialog.dart';
-import 'package:flutter_test_for_vs/views/notes/new_notes_view.dart';
+import 'package:flutter_test_for_vs/views/notes/create_update_notes_view.dart';
 import 'package:flutter_test_for_vs/views/notes/notes_list_view.dart';
 import 'package:path/path.dart';
 import '../../constants/routes.dart';
@@ -38,7 +38,9 @@ class _NotesViewState extends State<NotesView> {
           actions: [
             IconButton(
                 onPressed: () {
-                  Navigator.of(context).pushNamed(NewNoteRoute);
+                  Navigator.of(context).pushNamed(
+                    NewNoteRoute,
+                  );
                 },
                 icon: const Icon(Icons.add)),
             PopupMenuButton<MenuAction>(onSelected: (value) async {
@@ -78,11 +80,15 @@ class _NotesViewState extends State<NotesView> {
                         if (snapshot.hasData) {
                           final allnotes = snapshot.data as List<DatabaseNotes>;
                           return NotesListView(
-                              notes: allnotes,
-                              onDeletenote: (note) async {
-                                await _notesService.DeleteNote(id: note.id);
-                              });
-                          print("this is the ans ${allnotes}");
+                            notes: allnotes,
+                            onDeletenote: (note) async {
+                              await _notesService.DeleteNote(id: note.id);
+                            },
+                            onTap: (note) {
+                              Navigator.of(context)
+                                  .pushNamed(NewNoteRoute, arguments: note);
+                            },
+                          );
                         } else {
                           return const CircularProgressIndicator();
                         }

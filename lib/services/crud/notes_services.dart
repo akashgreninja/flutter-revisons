@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'package:flutter_test_for_vs/extensions/list/filter.dart';
 import 'package:flutter_test_for_vs/services/crud/crud_exceptions.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' show join;
@@ -9,6 +10,7 @@ class NotesService {
   Database? _db;
 
   List<DatabaseNotes> _notes = [];
+  DatabaseUser? _user;
 
   NotesService._sharedinstance() {
     _notesStreamController =
@@ -25,32 +27,41 @@ class NotesService {
 
   late final StreamController<List<DatabaseNotes>> _notesStreamController;
 
-  Stream<List<DatabaseNotes>> get allNotes => _notesStreamController.stream;
+  Stream<List<DatabaseNotes>> get allNotes =>
+      _notesStreamController.stream.filter((note) {
+        final currentUser = _user;
+        log("${_user} him");
+        if (currentUser != null) {
+          return note.userId == currentUser.id;
+        } else {
+          log("we here");
+          throw UserShouldBeDefined();
+        }
+      });
 
-  // Future<DatabaseUser> GetorCreateUser({required String email}) async {
-  //   try {
-  //     final user = await getUser(email: email);
-  //     print("getorcreate");
-  //     return user;
-  //   } on CouldNotFindUser {
-  //     final createuser = await addUser(email: email);
-  //     return createuser;
-  //   } catch (e) {
-  //     print("getorcreate");
-
-  //     rethrow;
-  //   }
-  // }
-
-  Future<DatabaseUser> GetorCreateUser({required String email}) async {
+  Future<DatabaseUser> GetorCreateUser({
+    required String email,
+    bool SetAsCurrentUser = true,
+  }) async {
     try {
+      log("check here");
       final user = await getUser(email: email);
+      log("${user}fef");
+      if (SetAsCurrentUser) {
+        _user = user;
+        log("inhehhehehh");
+      }
       return user;
     } catch (e) {
       if (e == CouldNotFindUser) {
         final createuser = await addUser(email: email);
+        if (SetAsCurrentUser) {
+          _user = createuser;
+          log("inhehhehehh");
+        }
         return createuser;
       } else {
+        log("inhehhehehh");
         rethrow;
       }
     }
@@ -66,6 +77,7 @@ class NotesService {
       where: 'email=?',
       whereArgs: [email.toLowerCase()],
     );
+
     if (finalrows.isEmpty) {
       log("inside user 2.0 false");
       throw CouldNotFindUser();
@@ -90,9 +102,13 @@ class NotesService {
     await _IsDbOpen();
     final db = _getDatabaseorthrow();
     await getNote(id: note.id);
-    final updatedcount = await db.update(noteTable, {
-      textColumn: text,
-    });
+    final updatedcount = await db.update(
+        noteTable,
+        {
+          textColumn: text,
+        },
+        where: 'id=?',
+        whereArgs: [note.id]);
     if (updatedcount == 0) {
       throw CouldNotUpdateNote();
     } else {
@@ -113,6 +129,7 @@ class NotesService {
     );
     print(note);
     print("${note.map((e) => DatabaseNotes.fromRow(e))} and");
+
     return note.map((e) => DatabaseNotes.fromRow(e));
   }
 
@@ -276,6 +293,7 @@ class DatabaseUser {
 
   @override
   String toString() => 'Person,ID=$id , email=$email';
+
   @override
   bool operator ==(covariant DatabaseUser other) => id == other.id;
 

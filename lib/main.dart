@@ -5,7 +5,7 @@ import 'package:flutter_test_for_vs/views/notes/NotesView.dart';
 import 'package:flutter_test_for_vs/views/VerifyEmailView.dart';
 import 'dart:developer' as devtools show log;
 import 'package:flutter_test_for_vs/views/login_view.dart';
-import 'package:flutter_test_for_vs/views/notes/new_notes_view.dart';
+import 'package:flutter_test_for_vs/views/notes/create_update_notes_view.dart';
 import 'package:flutter_test_for_vs/views/register_view.dart';
 
 void main() {
@@ -18,7 +18,7 @@ void main() {
         registerRoute: (context) => const RegisterView(),
         notes: (context) => const NotesView(),
         VerifyEmailRoute: (context) => const VerifyEmail(),
-        NewNoteRoute: (context) => const NewNotesView()
+        NewNoteRoute: (context) => const CreateUpdateNotesView()
       },
     ),
   );
