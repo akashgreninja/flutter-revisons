@@ -11,6 +11,7 @@ class NotesService {
 
   List<DatabaseNotes> _notes = [];
   DatabaseUser? _user;
+  static final NotesService _shared = NotesService._sharedinstance();
 
   NotesService._sharedinstance() {
     _notesStreamController =
@@ -19,7 +20,6 @@ class NotesService {
     });
   }
 //we are creating a singleton so that when we call NotesService() the app does not crash !! and the factory just sends the notes The singleton pattern is a pattern used in object-oriented programming which ensures that a class has only one instance and also provides a global point of access to it so we create one instance and factory it
-  static final NotesService _shared = NotesService._sharedinstance();
 
   factory NotesService() => _shared;
 
@@ -27,7 +27,7 @@ class NotesService {
 
   late final StreamController<List<DatabaseNotes>> _notesStreamController;
 
-  Stream<List<DatabaseNotes>> get allNotes =>
+  Stream<List<DatabaseNotes>> get allnotes =>
       _notesStreamController.stream.filter((note) {
         final currentUser = _user;
         log("${_user} him");
@@ -52,18 +52,15 @@ class NotesService {
         log("inhehhehehh");
       }
       return user;
-    } catch (e) {
-      if (e == CouldNotFindUser) {
-        final createuser = await addUser(email: email);
-        if (SetAsCurrentUser) {
-          _user = createuser;
-          log("inhehhehehh");
-        }
-        return createuser;
-      } else {
-        log("inhehhehehh");
-        rethrow;
+    } on CouldNotFindUser {
+      final createdUser = await addUser(email: email);
+      if (SetAsCurrentUser) {
+        _user = createdUser;
       }
+
+      return createdUser;
+    } catch (e) {
+      rethrow;
     }
   }
 
@@ -136,6 +133,7 @@ class NotesService {
   Future<DatabaseNotes> getNote({required int id}) async {
     await _IsDbOpen();
     final db = _getDatabaseorthrow();
+    log("we in gwt one func");
     final note =
         await db.query(noteTable, where: 'id=?', limit: 1, whereArgs: [id]);
     if (note.isEmpty) {
@@ -182,7 +180,7 @@ class NotesService {
     log("correct");
     final dbUser = await getUser(email: owner.email);
     if (dbUser != owner) {
-      print("nope");
+      log("user not there man");
       throw CouldNotFindUser();
     }
     const text = '';
@@ -197,9 +195,9 @@ class NotesService {
       text: text,
     );
     _notes.add(note);
-    print("${note} dsdsdsdsdsdsdsdsvdgsdgsgdsgvdvgsdvsgg");
+
     _notesStreamController.add(_notes);
-    print("${note} dsdsdsdsdsdsdsdsvdgsdgsgdsgvdvgsdvsgg");
+
     return note;
   }
 
@@ -218,6 +216,7 @@ class NotesService {
     final userid = await db.insert(userTable, {
       emailColumn: email.toLowerCase(),
     });
+    log("added him");
     return DatabaseUser(id: userid, email: email);
   }
 

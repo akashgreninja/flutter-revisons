@@ -60,7 +60,7 @@ class _NewNotesViewState extends State<CreateUpdateNotesView> {
     final currentuser = AuthService.firebase().currentUser!;
     log("${currentuser} dnwjdwjwdwbwj");
     final email = currentuser.email!;
-    log("${email} doneeee");
+    log("${email} last check");
     final owner = await _notesService.GetorCreateUser(email: email);
     log("${owner} owner here");
     try {
@@ -85,6 +85,7 @@ class _NewNotesViewState extends State<CreateUpdateNotesView> {
 
   void _saveNoteIfTextNotEmpty() async {
     final note = _note;
+
     log(" not deleted");
     final text = _textController.text;
     log(text);

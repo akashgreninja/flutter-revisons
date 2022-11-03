@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'dart:developer' as devtools show log;
 
@@ -59,15 +61,24 @@ class _MyWidgetState extends State<LoginView> {
                 final password = _password.text;
 
                 try {
-                  await AuthService.firebase()
-                      .logIn(email: email, password: password);
+                  log("we here at the login_new");
+
+                  await AuthService.firebase().logIn(
+                    email: email,
+                    password: password,
+                  );
+                  log("${email}");
+                  _email.text = '';
                   // ignore: avoid_print
                   // devtools.log(creds.toString());
                   final user = AuthService.firebase().currentUser;
+                  log("${user} at the login_new");
                   if (user?.isEmailVerified ?? false) {
+                    log("${user?.isEmailVerified} at the login_new");
                     Navigator.of(context).pushNamedAndRemoveUntil(
                         notes, (Route<dynamic> route) => false);
                   } else {
+                    log("${user} at the login_new");
                     Navigator.of(context).pushNamed(VerifyEmailRoute);
                   }
                 } on UserNotFoundAuthException {
